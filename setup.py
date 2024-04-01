@@ -8,6 +8,8 @@ from document_loader import load_documents
 import argparse
 import sys
 
+import os
+
 from llm import getChatChain
 
 
@@ -28,43 +30,26 @@ def load_documents_into_database(model_name: str, documents_path: str) -> Chroma
     documents = TEXT_SPLITTER.split_documents(raw_documents)
 
     print("Creating embeddings and loading documents into Chroma")
+    embeddings = OllamaEmbeddings(model=model_name)
+    embeddings.base_url = os.environ["OLLAMA_HOST"]
+
     db = Chroma.from_documents(
         documents,
-        OllamaEmbeddings(model=model_name),
+        embeddings,
+        persist_directory="/var/pdf_sources_embeddings"
     )
+    db.persist()
+
     return db
 
 
-def main(llm_model_name: str, embedding_model_name: str, documents_path: str) -> None:
-    # Check to see if the models available, if not attempt to pull them
-    try:
-        check_if_model_is_available(llm_model_name)
-        check_if_model_is_available(embedding_model_name)
-    except Exception as e:
-        print(e)
-        sys.exit()
-
+def setup(embedding_model_name: str, documents_path: str) -> None:
     # Creating database form documents
     try:
         db = load_documents_into_database(embedding_model_name, documents_path)
     except FileNotFoundError as e:
         print(e)
         sys.exit()
-
-    llm = Ollama(model=llm_model_name)
-    chat = getChatChain(llm, db)
-
-    while True:
-        try:
-            user_input = input(
-                "\n\nPlease enter your question (or type 'exit' to end): "
-            )
-            if user_input.lower() == "exit":
-                break
-
-            chat(user_input)
-        except KeyboardInterrupt:
-            break
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -92,4 +77,4 @@ def parse_arguments() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_arguments()
-    main(args.model, args.embedding_model, args.path)
+    setup(args.embedding_model, args.path)

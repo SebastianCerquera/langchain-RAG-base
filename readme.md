@@ -1,12 +1,6 @@
 # Local LLM with RAG
 
-<p align="center">
-    <img src="images/wizard_experimenting.jpg" alt="A wizard experimenting - Leonardo AI" width="600">
-</p>
-
-This project is an experimental sandbox for testing out ideas related to running local Large Language Models (LLMs) with [Ollama](https://ollama.ai/) to perform Retrieval-Augmented Generation (RAG) for answering questions based on sample PDFs. In this project, we are also using Ollama to create embeddings with the [nomic-embed-text](https://ollama.com/library/nomic-embed-text) to use with [Chroma](https://docs.trychroma.com/). Please note that the embeddings are reloaded each time the application runs, which is not efficient and is only done here for testing purposes.
-
-[![asciicast](https://asciinema.org/a/fepTvXf1UiDpRUhhNiswL8isu.svg)](https://asciinema.org/a/fepTvXf1UiDpRUhhNiswL8isu)
+This project is an experimental sandbox for testing out ideas related to running local Large Language Models (LLMs) with [Ollama](https://ollama.ai/) to perform Retrieval-Augmented Generation (RAG) for answering questions based on sample PDFs. In this project, we are also using Ollama to create embeddings with the [nomic-embed-text](https://ollama.com/library/nomic-embed-text) to use with [Chroma](https://docs.trychroma.com/).
 
 ## Requirements
 
@@ -19,15 +13,19 @@ This project is an experimental sandbox for testing out ideas related to running
 3. Activate the virtual environment by running `source .venv/bin/activate` on Unix or MacOS, or `.\.venv\Scripts\activate` on Windows.
 4. Install the required Python packages by running `pip install -r requirements.txt`.
 
-## Running the Project
+### Running the Project
 
-**Note:** The first time you run the project, it will download the necessary models from Ollama for the LLM and embeddings. This is a one-time setup process and may take some time depending on your internet connection.
+Creates embeddings for the provided pdf sources: `python3 setup.py -p <pdf_sources>`
 
-1. Ensure your virtual environment is activated.
-2. Run the main script with `python app.py -m <model_name> -p <path_to_documents>` to specify a model and the path to documents. If no model is specified, it defaults to [mistral](https://ollama.com/library/mistral). If no path is specified, it defaults to `Research` located in the repository for example purposes.
-3. Optionally, you can specify the embedding model to use with `-e <embedding_model_name>`. If not specified, it defaults to [nomic-embed-text](https://ollama.com/library/nomic-embed-text).
+Spins an chat using the provided pdfs as sources: `python3 app.py -p <pdf_sources>`
 
-This will load the PDFs and Markdown files, generate embeddings, query the collection, and answer the question defined in `app.py`.
+
+## Dockerized setup
+
+Builds image and generate embeddings: `sudo docker build -t langchain_rag:0.0.3 --build-arg OLLAMA_HOST=http://<ollama_instance>:11434 .`
+
+Starts a jupyter instance on port 5001, the notebook entrypoint allows interacting with the chat: ` sudo docker run --rm -e OLLAMA_HOST=http://<ollama_instance>:11434 --net host -it langchain_rag:0.0.3`
+
 
 ## Technologies Used
 
@@ -35,3 +33,4 @@ This will load the PDFs and Markdown files, generate embeddings, query the colle
 - [Ollama](https://ollama.ai/): A platform for running Large Language models locally.
 - [Chroma](https://docs.trychroma.com/): A vector database for storing and retrieving embeddings.
 - [PyPDF](https://pypi.org/project/PyPDF2/): A Python library for reading and manipulating PDF files.
+- [Jupyter](https://jupyter.org/): A python based notebook system.
